@@ -1,6 +1,8 @@
 const path = require('path');
 const htmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     mode: 'development',
@@ -9,6 +11,7 @@ module.exports = {
         main: './index.js',
         stat: './statistics.js'
     },
+    target: 'web',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].[contenthash].bundle.js',
@@ -27,17 +30,36 @@ module.exports = {
             chunks: 'all'
         }
     },
+    devServer: {
+        port: 4200,
+        hot: true
+    },
     plugins: [
         new htmlWebpackPlugin({
             template: './index.html',
         }),
-        new CleanWebpackPlugin()
+        new CleanWebpackPlugin(),
+        new CopyWebpackPlugin({
+            patterns:[
+                {
+                    from: path.resolve(__dirname, 'src/logo.png'),
+                    to: path.resolve(__dirname, 'dist'),
+                }
+            ]
+        }),
+        new MiniCssExtractPlugin({
+            filename: '[name].[contenthash].css'
+        })
     ],
     module: {
         rules: [
             {
                 test: /\.css$/i,
-                use: ['style-loader', 'css-loader']
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader,
+                    },
+                    'css-loader']
             },
             {
                 test: /\.(png|svg|jpe?g|gif|webp)$/i,
