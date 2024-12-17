@@ -91,7 +91,7 @@ module.exports = {
     optimization: optimize(),
     devServer: {
         port: 4200,
-        hot: true
+        hot: false
     },
     plugins: setPlugins(),
     module: {
