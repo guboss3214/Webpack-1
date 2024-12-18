@@ -5,6 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin' );
+const EslintWebpackPlugin = require('eslint-webpack-plugin' )
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 const IS_PROD = !IS_DEV;
@@ -38,6 +39,22 @@ const setCssLoaders = (extra) => {
     return loaders
 }
 
+const setJsLoaders = (extra) => {
+    const loaders = {
+        loader: 'babel-loader',
+        options: {
+            presets: ['@babel/preset-env',]
+        }
+    }
+
+    if(extra){
+        loaders.options.presets.push(extra)
+    }
+
+    return loaders
+
+}
+
 const setPlugins = () => {
     const plugins = [
         new htmlWebpackPlugin({
@@ -54,6 +71,10 @@ const setPlugins = () => {
         }),
         new MiniCssExtractPlugin({
             filename: getFileName('css')
+        }),
+        new EslintWebpackPlugin ({
+            extensions: ['js']
+            // fix: true
         })
     ]
 
@@ -71,7 +92,7 @@ module.exports = {
     mode: 'development',
     context: path.resolve(__dirname, 'src'),
     entry: {
-        main: './index.js',
+        main: './index.jsx',
         stat: './statistics.ts'
     },
     target: 'web',
@@ -93,28 +114,24 @@ module.exports = {
         port: 4200,
         hot: false
     },
+    devtool: IS_DEV ? 'source-map' : false,
     plugins: setPlugins(),
     module: {
         rules: [
             {
                 test: /\.m?js$/,
                 exclude: /node_modules/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: ['@babel/preset-env']
-                    }
-                }
+                use: setJsLoaders()
+            },
+            {
+                test: /\.jsx$/,
+                exclude: /node_modules/,
+                use: setJsLoaders('@babel/preset-react')
             },
             {
                 test: /\.ts$/,
                 exclude: /node_modules/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: ['@babel/preset-env', '@babel/preset-typescript']
-                    }
-                }
+                use: setJsLoaders('@babel/preset-typescript')
             },
             {
                 test: /\.css$/i,
